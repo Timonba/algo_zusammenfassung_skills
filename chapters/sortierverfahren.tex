@@ -1,0 +1,202 @@
+% chapters/sortierverfahren.tex – Sortierverfahren (mit Beispielen)
+% Benötigt im Hauptdokument nur die Pakete aus main.tex (algorithm + algpseudocode
+% wurden dort bereits ergänzt).
+
+\chapter{Sortierverfahren}
+
+% =========================================================================
+% 1. INSERTION SORT
+% =========================================================================
+\section{Insertion‑Sort anwenden}
+\subsection*{Idee}
+Ein elementares, stabiles In‑Situ‑Verfahren: durchläuft das Feld von links
+nach rechts und fügt jedes neue Element an der korrekten Stelle in den bereits
+\emph{sortierten} linken Teil ein – wie das Sortieren eines Kartenstapels.
+
+\subsection*{Algorithmus (Java)}
+\begin{algorithmic}
+\Function{insertionSort}{int[] a}
+  \For{$i\gets1$ \textbf{to} $a.\text{length}-1$}
+    \State $key \gets a[i]$; $j \gets i$;
+    \While{$j>0$ \textbf{and} $a[j-1]>key$}
+         \State $a[j] \gets a[j-1]$; $j--$;
+    \EndWhile
+    \State $a[j] \gets key$;
+  \EndFor
+\EndFunction
+\end{algorithmic}
+
+\subsubsection*{Beispiel}
+Eingabe \([4,\,3,\,1,\,5,\,2]\)
+\[
+\begin{array}{l|lllll}
+\text{Schritt}&1&3&1&5&2\\\hline
+\text{Nach $i=1$}&3&4&1&5&2\\
+\text{Nach $i=2$}&1&3&4&5&2\\
+\text{Nach $i=3$}&1&3&4&5&2\\
+\text{Nach $i=4$}&1&2&3&4&5
+\end{array}
+\]
+
+\subsection*{Laufzeit und Eigenschaften}
+\begin{itemize}
+  \item Best Case $O(n)$ bei bereits sortierten Daten.\par
+  \item Worst / Average Case $O(n^{2})$ Vergleiche und Verschiebungen.\par
+  \item Speicher $O(1)$, stabil.\par
+  \item Sehr effizient für kleine oder fast sortierte Eingaben.
+\end{itemize}
+
+% =========================================================================
+% 2. QUICK SORT
+% =========================================================================
+\section{Quick‑Sort anwenden}
+\subsection*{Idee}
+Divide \& Conquer: Wähle ein \emph{Pivot}, partitioniere das Feld in Werte
+<Pivot und >Pivot, sortiere Teilfelder rekursiv; verknüpfe in‑place.
+
+\subsection*{Algorithmus (Java – Hoare‑Partition, Rekursion)}
+\begin{algorithmic}
+\Function{quickSort}{int[] a, int l, int r}
+  \If{$l<r$}
+    \State $p \gets \Call{partition}{a,l,r}$; \Comment{Rückgabe = Pivot‑Index}
+    \State \Call{quickSort}{a,l,p-1};
+    \State \Call{quickSort}{a,p+1,r};
+  \EndIf
+\EndFunction
+\end{algorithmic}
+
+\subsubsection*{Beispiel (erstes Element als Pivot)}
+Eingabe \([4,\,3,\,1,\,5,\,2]\)
+\begin{enumerate}[label=\alph*)]
+  \item Pivot 4 $\rightarrow$ Partition: \([3,1,2]\,4\,[5]\)
+  \item Rek. links: Pivot $\rightarrow$ \([1,2]\,3\,[]\).  Rek. rechts sortiert (1 Elem).
+  \item Rek. auf \([1,2]\): Pivot $\rightarrow$ \([]\,1\,[2]\).
+  \item Zusammengeführt: \([1,2,3,4,5]\)
+\end{enumerate}
+
+\subsection*{Laufzeit und Eigenschaften}
+\begin{itemize}
+  \item Average Case $O(n\log n)$, Worst Case $O(n^{2})$ bei ungünstigen Pivots.\par
+  \item Speicher $O(\log n)$ Rekursionstiefe, instabil, in‑place.\par
+  \item Meist schnellstes praktisches Vergleichsverfahren.
+\end{itemize}
+
+% =========================================================================
+% 3. HEAP VERWENDEN
+% =========================================================================
+\section{Heap verwenden}
+\subsection*{Definition}
+Ein \emph{Heap} ist ein vollständiger Binärbaum, der die Heap‑Eigenschaft erfüllt.
+
+\subsection*{Kernoperationen (Pseudocode)}
+\begin{algorithmic}
+\Function{insert}{int x}
+  \State $heap[++size] \gets x$; \Call{shiftUp}{size}
+\EndFunction
+\Function{extractMax}{}
+  \State $max \gets heap[1]$; $heap[1] \gets heap[size--]$;
+  \State \Call{shiftDown}{1}; \Return $max$;
+\EndFunction
+\end{algorithmic}
+
+\subsubsection*{Beispiel – Max‑Heap Aufbau}
+Eingabe \([4,\,3,\,1,\,5,\,2]\);
+\begin{center}
+\begin{tabular}{c|c}
+Einfügen & Heap‑Array (1‑basiert)\\\hline
+4 & 4\\
+3 & 4\,3\\
+1 & 4\,3\,1\\
+5 & 5\,4\,1\,3\\
+2 & 5\,4\,2\,3\,1
+\end{tabular}
+\end{center}
+
+% =========================================================================
+% 4. HEAP SORT
+% =========================================================================
+\section{Heap‑Sort anwenden}
+\subsection*{Idee}
+\textbf{Build‑Heap} und dann wiederholt Maximum nach hinten tauschen.
+
+\subsubsection*{Beispiel}
+Start‑Heap aus vorherigem Beispiel. Entferne iterativ Maximum:
+\[
+5\,\underline{4\,2\,3\,1}\;\rightarrow\;1\,\underline{4\,2\,3}\;\rightarrow\;1\,2\,\underline{3}\;\rightarrow\;1\,2\,3\,4\,5
+\]
+
+\subsection*{Eigenschaften}
+Laufzeit garantiert $O(n\log n)$, Speicher $O(1)$, instabil.
+
+% =========================================================================
+% 5. MERGE SORT
+% =========================================================================
+\section{Merge‑Sort anwenden}
+\subsection*{Idee}
+Rekursiv halbieren, dann zusammenführen.
+
+\subsubsection*{Beispiel (Top‑Down)}
+\begin{align*}
+[4,3,1,5,2] &\Rightarrow [4,3] \,[1,5,2]\\
+&\Rightarrow [4] [3] \;[1] [5,2]\\
+&\Rightarrow [2,5] (Merge)\\
+&\Rightarrow [3,4] (Merge)\\
+&\Rightarrow [1,2,5] (Merge)\\
+&\Rightarrow [1,2,3,4,5] (Final‑Merge)
+\end{align*}
+
+\subsection*{Eigenschaften}
+Immer $O(n\log n)$, Speicher $O(n)$, stabil.
+
+% =========================================================================
+% 6. COUNTING SORT
+% =========================================================================
+\section{Counting‑Sort anwenden}
+\subsection*{Beispiel}
+Eingabe \([4,3,1,5,2] ,\;k=6\)
+\[
+C=\begin{array}{c|cccccc}
+val&0&1&2&3&4&5\\\hline
+count&0&1&1&1&1&1\end{array}
+\;
+\Rightarrow\;\text{Prefix}=[0,1,2,3,4,5]\;
+\Rightarrow\;\text{Output}=[1,2,3,4,5]
+\]
+
+\subsection*{Komplexität}
+$O(n+k)$ Zeit/Speicher, stabil.
+
+% =========================================================================
+% 7. BUCKET SORT
+% =========================================================================
+\section{Bucket‑Sort anwenden}
+\subsection*{Beispiel}
+Normiere Array \([0.42,0.32,0.23,0.52,0.12]\) mit $m=5$ Buckets.
+\begin{center}
+\begin{tabular}{c|l}
+Bucket & Elemente nach Streuung / Sortierung\\\hline
+0 & 0.12\\
+1 & 0.23\,0.32\\
+2 & 0.42\\
+3 & 0.52\\
+4 & –
+\end{tabular}
+\end{center}
+Konkatenation ergibt \([0.12,0.23,0.32,0.42,0.52]\).
+
+\subsection*{Komplexität}
+Average $O(n)$, Worst $O(n^{2})$.
+
+% =========================================================================
+% 8. RADIX SORT
+% =========================================================================
+\section{Radix‑Sort anwenden}
+\subsection*{Beispiel (Dezimal, LSD, $d=2$)}
+Eingabe \([23,17,45,11,29]\)
+\begin{enumerate}[label=Stelle~\arabic*]
+  \item Einer‑Sortierung → \([11,23,45,17,29]\)
+  \item Zehner‑Sortierung → \([11,17,23,29,45]\)
+\end{enumerate}
+
+\subsection*{Komplexität}
+$O(d(n+b))$ Zeit.

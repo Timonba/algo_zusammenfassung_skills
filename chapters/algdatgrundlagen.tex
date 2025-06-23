@@ -1,0 +1,188 @@
+% chapters/algdatgrundlagen.tex – Algorithmen & Datenstrukturen – Grundlagen
+% Benötigt im Hauptdokument keine zusätzlichen Pakete neben main.tex
+
+% -----------------------------------------------------------------------------
+\chapter{Algorithmen \& Datenstrukturen – Grundlagen}
+
+% ##############################################################################
+% 1. VERKETTETE LISTEN
+% ##############################################################################
+\section{Umgang mit verketteten Listen}
+\subsection*{Grundidee}
+Eine \emph{einfach verkettete Liste} besteht aus Knoten der Form
+\[\texttt{\{ key, next \}}\].
+Im Gegensatz zu Arrays wächst die Struktur dynamisch, weil Einfügen/Löschen
+nur Zeiger (bzw. Referenzen) ändert.
+
+\subsection*{Typische Operationen und Laufzeiten}
+\begin{center}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{@{}lcc@{}}
+    \textbf{Operation} & \textbf{am Kopf} & \textbf{allg. Position}\\\hline
+    \textsc{insert}   & $\Theta(1)$   & $\Theta(1)$\,*\\
+    \textsc{delete}   & $\Theta(1)$   & $\Theta(1)$\,*\\
+    \textsc{search}   & \multicolumn{2}{c}{$\Theta(n)$}\\
+  \end{tabular}
+\end{center}
+\emph{\small *\,Vorausgesetzt, ein Verweis auf den Vorgängerknoten ist gegeben.}
+
+\subsection*{Beispielimplementierung (Java)}
+\begin{verbatim}
+static class Node {
+    int key;
+    Node next;
+    Node(int k, Node n) { key = k; next = n; }
+}
+
+static Node pushFront(Node head, int x) {
+    return new Node(x, head);
+}
+
+static Node popFront(Node head) {
+    return (head == null) ? null : head.next;
+}
+\end{verbatim}
+Doppelt verkettete Listen ergänzen ein Feld \texttt{prev} und erlauben damit
+$\Theta(1)$ Löschungen ohne Vorgängerzugriff.
+
+\vspace{1em}\noindent
+\textbf{Praxisfaustregel:} \emph{Listen für häufige Ein-/Ausfügeoperationen,
+Arrays für zufälligen Direktzugriff.}
+
+% ##############################################################################
+% 2. SIMULATION EINER DS MIT EINER ANDEREN
+% ##############################################################################
+\section{Simulation einer Datenstruktur mit einer anderen}
+\subsection*{Queue mit zwei Stacks}
+\begin{algorithmic}[H]
+\Require Zwei Stacks $S_{\text{in}},\,S_{\text{out}}$
+\Function{enqueue}{$x$} \Comment{immer $\Theta(1)$}
+    push $x$ auf $S_{\text{in}}$
+\EndFunction
+\Function{dequeue}{} \Comment{amortisiert $\Theta(1)$}
+    \If{$S_{\text{out}}$ leer}
+        \While{$S_{\text{in}}$ nicht leer} \Comment{jedes Element max. 1\,$\times$ verschoben}
+            verschiebe oberstes Element nach $S_{\text{out}}$
+        \EndWhile
+    \EndIf
+    return pop von $S_{\text{out}}$
+\EndFunction
+\end{algorithmic}
+
+\subsection*{Stack mit zwei Queues}
+\textbf{Lazy‑Variante} (\textsc{push} billig, \textsc{pop} teuer):
+\begin{algorithmic}[H]
+\Require Zwei Queues $Q_1,\,Q_2$
+\Function{push}{$x$}
+    enqueue $x$ in $Q_1$  \Comment{$\Theta(1)$}
+\EndFunction
+\Function{pop}{}
+    \While{$|Q_1| > 1$} verschiebe Front von $Q_1$ nach $Q_2$ \EndWhile
+    swap $Q_1, Q_2$; return letztes Element \Comment{$\Theta(n)$}
+\EndFunction
+\end{algorithmic}
+\textbf{Eager‑Variante} dreht das Kostenprofil um.
+
+\subsection*{Cursor‑Listen (Array \texorpdfstring{$\leftrightarrow$}{↔} Liste)}
+Ein Array simuliert Zeiger durch Indizes – nützlich, wenn echte Zeiger verboten
+oder Speicher abstrahiert wird (z.\,B. Prüfungen).
+
+% ##############################################################################
+% 3. BAUMPARAMETER
+% ##############################################################################
+\section{Baumparameter berechnen}
+\subsection*{Definitionen}
+\begin{description}
+  \item[Größe] $|B|$ … Anzahl Knoten.
+  \item[Blätter] $\mathrm{leaf}(B)$ … Knoten Grad $0$.
+  \item[Höhe] $h(B)$ … Länge des längsten Pfades Wurzel $\rightarrow$ Blatt.
+\end{description}
+
+\subsection*{Rekursive Berechnung (Pseudocode)}
+\begin{verbatim}
+size(v):
+  if v == null return 0
+  return 1 + size(v.left) + size(v.right)
+
+treeHeight(v):                leafCount(v):
+  if v == null return -1        if v == null return 0
+  return 1 + max(               if v.left==null && v.right==null return 1
+      treeHeight(v.left),       return leafCount(v.left)
+      treeHeight(v.right))                + leafCount(v.right)
+\end{verbatim}
+Alle Algorithmen traversieren jeden Knoten einmal: $\Theta(n)$ Zeit und
+$\Theta(h)$ Zusatzspeicher durch den Rekursionsstapel.
+
+\subsection*{Grenzen für die Höhe}
+Für max. Kind‐Grad $d$ und $n$ Knoten gilt
+\[\boxed{\;\lceil\log_d n\rceil \;\le\; h(B) \;\le\; n-1\;}\]
+
+% ##############################################################################
+% 4. BAUMDURCHLÄUFE
+% ##############################################################################
+\section{Baumdurchläufe (inkl. Level‑order)}
+\begin{enumerate}
+  \item \textbf{Preorder}: Wurzel $\rightarrow$ links $\rightarrow$ rechts
+  \item \textbf{Inorder}: links $\rightarrow$ Wurzel $\rightarrow$ rechts (BST $\rightarrow$ sortiert)
+  \item \textbf{Postorder}: links $\rightarrow$ rechts $\rightarrow$ Wurzel
+  \item \textbf{Level‑order} (BFS): Ebenenweise links $\rightarrow$ rechts
+\end{enumerate}
+
+\subsection*{Iterative Level‑order in Java}
+\begin{verbatim}
+static void levelOrder(Node root) {
+    Queue<Node> q = new ArrayDeque<>();
+    q.add(root);
+    while (!q.isEmpty()) {
+        Node v = q.remove();
+        visit(v);
+        if (v.left  != null) q.add(v.left);
+        if (v.right != null) q.add(v.right);
+    }
+}
+\end{verbatim}
+Laufzeit $\Theta(n)$, Speicher $\Theta(w)$ mit $w$ = maximale Breite.
+
+% ##############################################################################
+% 5. ALGORITHMENANSÄTZE ERKENNEN
+% ##############################################################################
+\section{Ansatz eines Algorithmus erkennen}
+\begin{description}
+  \item[Divide \& Conquer] rekursive Zerlegung (z.\,B. Mergesort).
+  \item[Backtracking] Tiefensuche mit Zurückrudern (z.\,B. 8‑Damen‑Problem).
+  \item[Dynamische Programmierung] überlappende Teilprobleme, Tabellierung.
+  \item[Greedy] Wahl lokal optimaler Schritte ohne spätere Korrektur
+        (z.\,B. Kruskal‑MST).
+\end{description}
+Charakteristisch sind typische Code‑Gerüste: Rekursion + Merge, Tabellenschleife,
+fortlaufender "beste Wahl"‑Schritt…
+
+% ##############################################################################
+% 6. ALGORITHMUS ENTWICKELN
+% ##############################################################################
+\section{Algorithmus aus Vorgaben entwickeln}
+\begin{enumerate}
+  \item \textbf{Problem analysieren}: Eingabe/Output exakt definieren.
+  \item \textbf{Strategie wählen}: D\&C, DP, Greedy, Backtracking…
+  \item \textbf{Datenstrukturen}: Array, Liste, Heap, Graph…
+  \item \textbf{Pseudocode} \& Invarianten festhalten.
+  \item \textbf{Komplexität}: Landau, evtl. Master‑Theorem für Rekursionen.
+\end{enumerate}
+
+% ##############################################################################
+% 7. UNPASSENDEN ANSATZ BEGRÜNDEN
+% ##############################################################################
+\section{Unpassenden Ansatz begründen / Gegenbeispiel finden}
+\subsection*{Vorgehen}
+\begin{enumerate}
+  \item Kernannahme des Ansatzes identifizieren.
+  \item Eingabe konstruieren, die Annahme widerlegt.
+  \item Falsche Ausgabe oder höhere Kosten nachweisen.
+\end{enumerate}
+\subsection*{Beispiel: Greedy beim Rucksackproblem}
+Greedy wählt stets maximales \emph{Wert/Gewicht}.  Gegenbeispiel:
+\[
+  (w,v)=\{(5,9),(6,10),(1,1)\},\;C=7
+\]
+Greedy nimmt $(5,9)+(1,1)$ (Wert 10), optimal ist $(6,10)$.
+

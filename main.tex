@@ -1,0 +1,92 @@
+% main.tex – bereinigte Version
+\documentclass[12pt,a4paper]{report}
+
+% --- Eingabe & Schriftcodierung -------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[german]{babel}
+
+% --- Typografie & Layout --------------------------------------------------------
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+
+% --- Links & PDF‑Metadaten ------------------------------------------------------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks   = true,
+  linkcolor    = blue,
+  urlcolor     = blue,
+  pdftitle     = {Überblick: Algorithmik und Theoretische Informatik},
+  pdfauthor    = {Timon Bambynek, Max Mustermann, Maria Musterfrau}
+}
+
+% Doppelte „page.1“‑Zielmarke vermeiden: erst deaktivieren, nach Titel wieder aktiv.
+\hypersetup{pageanchor=false}
+
+% --- Kopf- / Fußzeilen ----------------------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[L]{Alg. \& Theo. Informatik}
+\fancyhead[R]{\nouppercase{\rightmark}}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+% Warnung von fancyhdr beseitigen
+\setlength{\headheight}{14pt}
+\addtolength{\topmargin}{-2pt}
+
+% Automaten Design:
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,automata,positioning}
+\tikzset{>=Stealth}
+
+% (Pseudo) Code
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% --- Titeldaten -----------------------------------------------------------------
+\title{Überblick: Algorithmik und Theoretische Informatik\\[0.5em]\large Lern- und Übungsskript}
+\author{Timon Bambynek \and Max Mustermann \and Maria Musterfrau}
+\date{\today}
+
+% ===============================================================================
+\begin{document}
+\hypersetup{pageanchor=true}% jetzt wieder Zielmarken erzeugen
+
+% --- Titelblatt -----------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  {\scshape\LARGE FH Aachen (AMI im Rahmen der Matse Ausbildung)\par}
+  \vspace{1.5cm}
+  {\huge\bfseries Überblick: Algorithmik und Theoretische Informatik\par}
+  \vspace{0.5cm}
+  {\Large Lern- und Übungsskript\par}
+  \vspace{1.5cm}
+  {\Large Autoren:\par}
+  \vspace{0.3cm}
+  {\large Timon Bambynek\par}
+  {\large Max Mustermann\par}
+  {\large Maria Musterfrau\par}
+  \vfill
+  {\large \today\par}
+\end{titlepage}
+
+\pagenumbering{Roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+% --- Kapitel --------------------------------------------------------------------
+\include{chapters/automatentheorie}
+\include{chapters/laufzeit}
+\include{chapters/algdatgrundlagen}
+\include{chapters/sortierverfahren}
+\include{chapters/suchen}
+\include{chapters/graphenalgorithmen}
+
+\end{document}

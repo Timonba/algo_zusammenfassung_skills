@@ -1,0 +1,416 @@
+% chapters/automatentheorie.tex – vollständige, kompilierbare Version
+% Benötigt im Hauptdokument:
+%   \usepackage{tikz}
+%   \usetikzlibrary{automata,positioning}
+%   \tikzset{>=stealth'}
+
+%========================================================
+\chapter{Automatentheorie}
+
+%--------------------------------------------------------
+\section{Induktive Definitionen}
+Induktive Definitionen gestatten es, \emph{unendliche} Mengen mithilfe endlich vieler Regeln festzulegen.\\[4pt]
+\textbf{Schema}
+\begin{itemize}
+  \item \textit{Basis:} Festlegung mindestens eines trivialen Elements, z.\,B. $\varepsilon$ als leeres Wort.
+  \item \textit{Induktionsschritt:} Beschreibung, wie aus bereits konstruierten Elementen neue entstehen, z.\,B.
+        \[ w\in\Sigma^{\ast},\; a\in\Sigma \;\Longrightarrow\; w a\in\Sigma^{\ast}. \]
+\end{itemize}
+So erhält man z.\,B. die vollständige Wortmenge $\Sigma^{\ast}$ eines endlichen Alphabetes.  
+In Beweisen arbeitet man \emph{vorwärts} (Aufbau) oder \emph{rückwärts} (Zerlegung in Basis + Schritt).
+
+%--------------------------------------------------------
+\section{Codierung von Daten: Zahlen, Folgen, Matrizen}
+\begin{description}
+  \item[Zahlen] Binärdarstellung $\mathsf{Bin}$: $n=\sum_{i=0}^{k-1}2^{\,k-1-i}\,x_i,\;x_i\in\{0,1\}$.
+  \item[Zahlenfolgen] $(n_1,\dots,n_k)\;\mapsto\;
+        \mathsf{Bin}(n_1)\,\#\,\mathsf{Bin}(n_2)\,\#\,\dots\,\#\,\mathsf{Bin}(n_k)$.
+  \item[Matrizen] Matrix $(a_{ij})_{1\le i\le m}^{1\le j\le n}$ wird zeilenweise kodiert, Zeilen durch
+        \texttt{\#\#}, Einträge wie oben.
+\end{description}
+So lassen sich komplexe Strukturen auf Wörter über $\{0,1,\#\}$ zurückführen.
+
+%--------------------------------------------------------
+\section{Abzählende Kombinatorik}\label{sec:comb}
+Gegeben $n$ unterscheidbare Objekte; gesucht: Anzahl der Ziehungen von $k$ Objekten.
+
+\renewcommand{\arraystretch}{1.2}
+\begin{center}
+\begin{tabular}{@{}l|c@{}}
+\textbf{Situation} & \textbf{Möglichkeiten}\\\hline
+geordnet, mit Zurücklegen       & $n^{k}$ \\
+geordnet, ohne Zurücklegen      & $(n)_k = n(n-1)\dots(n-k+1)$ \\
+ungeordnet, ohne Zurücklegen    & $\displaystyle \binom{n}{k} = \frac{n!}{k!\,(n-k)!}$
+\end{tabular}
+\end{center}
+
+\noindent\textit{Beispiel:} Für $\Sigma=\{q,r,s,t\}$ seien Wörter der Länge 3 ohne Wiederholung gesucht.  
+Es gilt $(4)_3 = 4\cdot3\cdot2=24$ (geordnet, ohne Zurücklegen).  
+Die Formeln folgen direkt aus Produkt- und Quotientenprinzip.
+
+%--------------------------------------------------------
+\section{Automat erstellen}
+\begin{enumerate}
+  \item Formuliere die Sprache als Eigenschaft der bisher gelesenen Eingabe.
+  \item Lege für jedes Präfix des Suchmusters einen Zustand an (z.\,B. Präfixe von \texttt{110110}: \texttt{1}, \texttt{11}, \texttt{110}, …).
+  \item Definiere Übergänge so, dass jeder gelesene Buchstabe stets den längsten gültigen Präfixzustand erreicht.
+  \item Markiere akzeptierende Zustände; oft genügt ein einziger.
+\end{enumerate}
+
+\paragraph{Minimalbeispiel}\leavevmode
+\begin{center}
+\begin{tikzpicture}[node distance=30mm,on grid,auto]
+  \node[state,initial]            (q0) {$q_0$};
+  \node[state,accepting,right=of q0] (q1) {$q_1$};
+  \path[->]
+    (q0) edge[bend left]  node {1} (q1)
+    (q1) edge[bend left]  node {0} (q0)
+    (q0) edge[loop above] node {0} ()
+    (q1) edge[loop above] node {1} ();
+\end{tikzpicture}
+\end{center}
+Dieser DEA akzeptiert genau die Wörter mit \emph{ungerader} Anzahl von 1ern.
+
+%--------------------------------------------------------
+\section{Automat benutzen}
+Ein Wort $w$ prüfen:
+\begin{enumerate}
+  \item Starte in $q_0$.
+  \item Lese Symbol für Symbol und folge der Übergangsfunktion $\delta$.
+  \item Nach dem letzten Symbol: akzeptiere, falls aktueller Zustand in $F$, sonst verwerfe.
+\end{enumerate}
+
+%--------------------------------------------------------
+\section{Minimierung von DEAs}\label{sec:min-dea}
+\textbf{Handlungsvorschrift (Papier):}
+\begin{enumerate}
+  \item \textit{Unerreichbares entfernen:} von $q_0$ aus Breadth‑First alle erreichbaren Zustände markieren, andere streichen.
+  \item \textit{Tabellenmethode:}
+    \begin{enumerate}
+      \item Notiere jedes ungeordnete Paar $\{p,q\}$ ($p\neq q$) in einem Dreiecksgitter.
+      \item Markiere sofort Paare, in denen genau einer akzeptierend ist.
+      \item Wiederhole, bis stabil: markiere $(p,q)$, falls ein Symbol $a$ existiert mit $\bigl(\delta(p,a),\delta(q,a)\bigr)$ bereits markiert.
+    \end{enumerate}
+  \item \textit{Äquivalenzklassen bilden:} unmarkierte Paare gehören zusammen $\to$ ein Zustand.
+  \item \textit{Neuen DEA konstruieren:} Startzustand = Klasse von $q_0$; Übergänge entsprechend.
+\end{enumerate}
+
+\paragraph{Minimalbeispiel}\leavevmode
+\begin{center}
+\begin{tikzpicture}[node distance=25mm,on grid,auto]
+  % Ausgangsautomat
+  \node[state,initial] (A)              {$A$};
+  \node[state,accepting,right=of A] (B) {$B$};
+  \node[state,accepting,below=of B] (C) {$C$};
+  \node[state,below=of A]           (D) {$D$};
+  \path[->]
+    (A) edge[bend left]  node {0} (B)
+        edge[bend right] node[swap] {1} (C)
+    (B) edge[loop above] node {0} ()
+        edge             node {1} (C)
+    (C) edge[loop right] node {1} ()
+        edge             node {0} (B)
+    (D) edge[loop below] node {0,1} ();
+\end{tikzpicture}
+\end{center}
+Zustand $D$ ist unerreichbar; $B$ und $C$ verschmelzen.  
+\medskip
+\begin{center}
+\begin{tikzpicture}[node distance=30mm,on grid,auto]
+  % Minimierter Automat
+  \node[state,initial]            (A)  {$\{A\}$};
+  \node[state,accepting,right=of A] (BC) {$\{B,C\}$};
+  \path[->]
+    (A)  edge[bend left]  node {0,1} (BC)
+    (BC) edge[loop above] node {0,1} ();
+\end{tikzpicture}
+\end{center}
+
+%--------------------------------------------------------
+\subsubsection*{Größeres Beispiel (6 Zustände, mehrstufige Minimierung)}
+
+%------------------ Ausgangs-Automat --------------------
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=30mm,on grid,auto]
+  % Zeile 1
+  \node[state,initial] (A)               {A};
+  \node[state,right=of A] (B)            {B};
+  \node[state,right=of B] (C)            {C};
+  % Zeile 2
+  \node[state,below=of A] (D)            {D};
+  \node[state,accepting,below=of B] (E)  {E};
+  \node[state,accepting,below=of C] (F)  {F};
+
+  \path[->]
+    % A
+    (A) edge[bend right]  node{0} (B)
+        edge[bend left] node[swap]{1} (C)
+    % B
+    (B) edge[bend right] node{0} (E)
+        edge[bend right]  node{1} (C)
+    % C
+    (C) edge[bend left]  node[swap]{0} (E)
+        edge[loop right] node{1} ()
+    % D
+    (D) edge[loop below] node{0,1} ()
+    % E
+    (E) edge[loop below] node{0} ()
+        edge[bend right] node{1} (F)
+    % F
+    (F) edge[bend right] node[swap]{0} (E)
+        edge[loop right] node[swap]{1} ();
+\end{tikzpicture}
+\caption{Ausgangs-DEA \(M=(Q,\Sigma,\delta,q_0,F)\) mit \(Q=\{A,\dots,F\}\)}
+\end{figure}
+
+%------------------ Schrittweise Partitionen ----------
+\paragraph{Partition \(P_0\).}
+Startaufteilung in akzeptierende vs.\ verwerfende Zustände:
+\[
+P_0=\bigl\{\underbrace{\{A,B,C,D\}}_{\text{nicht akzeptierend}}, 
+          \underbrace{\{E,F\}}_{\text{akzeptierend}}\bigr\}.
+\]
+
+\paragraph{Partition \(P_1\).}
+Unterscheide, wohin die Zustände auf \emph{0} wechseln:
+\[
+P_1=\bigl\{\{A,D\},\ \{B,C\},\ \{E,F\}\bigr\}.
+\]
+
+\paragraph{Partition \(P_2\).}
+Unterscheide zusätzlich, wohin die Zustände auf \emph{1} wechseln:
+\[
+P_2=\bigl\{\{A\},\ \{D\},\ \{B,C\},\ \{E,F\}\bigr\}.
+\]
+
+\(P_2\) ist bereits stabil \Rightarrow \(\mathcal{M}_{\text{min}}\) hat 4 Zustände.
+
+%------------------ Minimaler Automat -----------------
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=22mm,on grid,auto]
+  \node[state,initial]            (Amin) {$\{A\}$};
+  \node[state,right=of Amin]      (BC)   {$\{B,C\}$};
+  \node[state,below=of Amin]      (Dmin) {$\{D\}$};
+  \node[state,accepting,right=of Dmin] (EF) {$\{E,F\}$};
+
+  \path[->]
+    % von {A}
+    (Amin) edge[bend left] node{0,1} (BC)
+    % von {B,C}
+    (BC)   edge[bend left] node{0} (EF)
+           edge[bend left] node{1} (Amin)
+    % von {D}
+    (Dmin) edge[loop below] node{0,1} ()
+    % von {E,F}
+    (EF)   edge[loop below] node{0} ()
+           edge[loop right] node{1} ();
+\end{tikzpicture}
+\caption{Ergebnis der Minimierung: 4‐Zustands-DEA \(\mathcal{M}_{\text{min}}\)}
+\end{figure}
+
+\medskip
+\noindent
+Damit sieht man Schritt für Schritt, wie das Äquivalenz­klassen-Verfahren 
+(Erdös–Myrvold / Moore / Hopcroft) arbeitet und letztlich die Übergänge des 
+minimalen Automaten erhält.
+
+
+%--------------------------------------------------------
+\section{Verknüpfung von Automaten}
+Union zweier Automaten $M_1,M_2$ ($L=L(M_1)\cup L(M_2)$):
+\begin{enumerate}
+  \item Füge neuen Startzustand $S$ ein.
+  \item Verbinde $S$ per $\varepsilon$-Kanten mit den Startzuständen von $M_1$ und $M_2$ ($\varepsilon$‑NEA).
+  \item Übernehme alle Zustände und Transitionen beider Automaten.
+  \item Akzeptierend sind sämtliche akzeptierenden Zustände aus $M_1$ und $M_2$.
+\end{enumerate}
+
+\paragraph{Minimalbeispiel (Vereinigung)}\leavevmode
+\begin{center}
+\begin{tikzpicture}[node distance=22mm,on grid,auto]
+  % DEA M1 – endet auf a
+  \node[state,initial]            (p0) {$p_0$};
+  \node[state,right=of p0]        (p1) {$p_1$};
+  \node[state,accepting,right=of p1] (p2) {$p_2$};
+  \path[->]
+    (p0) edge node {a} (p1)
+         edge[loop above] node {b} ()
+    (p1) edge node {a} (p2)
+         edge[loop above] node {b} ()
+    (p2) edge[loop above] node {a,b} ();
+  % DEA M2 – endet auf b
+  \node[state,initial,below=30mm of p0] (q0) {$q_0$};
+  \node[state,right=of q0]              (q1) {$q_1$};
+  \node[state,accepting,right=of q1]    (q2) {$q_2$};
+  \path[->]
+    (q0) edge node {b} (q1)
+         edge[loop below] node {a} ()
+    (q1) edge node {b} (q2)
+         edge[loop below] node {a} ()
+    (q2) edge[loop below] node {a,b} ();
+  % gemeinsamer Start S
+  \node[state,initial,above right=of q1] (S) {$S$};
+  \path[->]
+    (S) edge[dashed] node {$\varepsilon$} (p0)
+    (S) edge[dashed] node {$\varepsilon$} (q0);
+\end{tikzpicture}
+\end{center}
+
+\noindent\textbf{Schnitt / allgemeine Boolesche Operationen}  
+Für den \emph{Schnitt} $L=L(M_1)\cap L(M_2)$ (ebenso XOR, Differenz usw.) baut man einen
+\emph{Produktautomaten}:
+\begin{itemize}
+  \item \textit{Zustände:} kartesische Paare $(p,q)$ mit $p\in Q_1,\;q\in Q_2$.
+  \item \textit{Startzustand:} $(q_{0,1},q_{0,2})$.
+  \item \textit{Übergang:} $\delta((p,q),a)=(\delta_1(p,a),\delta_2(q,a))$.
+  \item \textit{Akzeptanz:} beide Komponenten akzeptierend (Schnitt). Für Vereinigung mindestens eine, für Differenz nur die erste usw.
+\end{itemize}
+
+\paragraph{Beispiel (Schnitt)}\leavevmode
+\begin{center}
+% Zwei kleine DEAs und ihr Produktautomat (Schnitt)
+\begin{tikzpicture}[node distance=22mm,on grid,auto]
+  % M1: gerade Anzahl 0
+  \node[state,initial]            (a0) {$p_0$};
+  \node[state,accepting,right=of a0] (a1) {$p_1$};
+  \path[->]
+    (a0) edge[bend left]  node {0} (a1)
+    (a1) edge[bend left]  node {0} (a0)
+    (a0) edge[loop above] node {1} ()
+    (a1) edge[loop above] node {1} ();
+  % M2: endet auf 0
+  \node[state,initial,below=30mm of a0] (b0) {$q_0$};
+  \node[state,accepting,right=of b0]    (b1) {$q_1$};
+  \path[->]
+    (b0) edge node {0} (b1)
+         edge[loop below] node {1} ()
+    (b1) edge[loop below] node {0} ()
+         edge[bend left] node {1} (b0);
+\end{tikzpicture}
+
+\vspace{1em}
+
+\begin{tikzpicture}[node distance=28mm,on grid,auto]
+  % Produktautomat für den Schnitt
+  \node[state,initial]                 (s00) {$\langle p_0,q_0\rangle$};
+  \node[state,right=of s00]            (s10) {$\langle p_1,q_0\rangle$};
+  \node[state,below=of s00]            (s01) {$\langle p_0,q_1\rangle$};
+  \node[state,accepting,right=of s01]  (s11) {$\langle p_1,q_1\rangle$};
+
+  \path[->]
+    % von s00
+    (s00) edge[bend right] node {0} (s10)
+          edge[loop above] node[swap]{1} ()
+    % von s10
+    (s10) edge[bend right] node {0} (s00)
+          edge[loop above] node{1} ()
+    % von s01
+    (s01) edge[bend right] node[swap] {0} (s11)
+          edge node[swap] {1} (s00)
+    % von s11
+    (s11) edge[bend right] node {0} (s01)
+          edge node {1} (s10);
+\end{tikzpicture}
+\end{center}
+Der Produktautomat akzeptiert genau die Wörter, die sowohl eine \emph{gerade Anzahl von~0} besitzen als auch auf~0 enden.  
+Damit illustriert das Beispiel anschaulich, wie der Schnitt zweier Sprachen mittels kartesischem Produkt realisiert wird.
+
+%--------------------------------------------------------
+\section{\texorpdfstring{$L^{R}$ mit $\varepsilon$-NEA erkennen}{LR mit ε-NEA erkennen}}
+Gegeben ein DEA $M$ für $L$, konstruiere einen $\varepsilon$-NEA $M'$ für die Umkehrsprache $L^R$:
+\begin{enumerate}
+  \item \textit{Kanten umdrehen:} jede Transition $p\xrightarrow{a}q$ wird $q\xrightarrow{a}p$.
+  \item \textit{Zustände tauschen:} alter Startzustand wird allein akzeptierend.
+  \item \textit{Neuer Startzustand $S$:} $\varepsilon$-Kanten von $S$ zu allen ehemaligen akzeptierenden Zuständen.
+\end{enumerate}
+$M'$ akzeptiert genau dann, wenn $M$ das rückwärts gelesene Wort akzeptiert.
+
+\paragraph{Minimalbeispiel}\leavevmode
+\begin{center}
+\begin{tikzpicture}[node distance=32mm,on grid,auto]
+  % ursprünglicher DEA M für L = {ab}
+  \node[state,initial]           (r0) {$r_0$};
+  \node[state,right=of r0]       (r1) {$r_1$};
+  \node[state,accepting,right=of r1] (r2) {$r_2$};
+  \path[->]
+    (r0) edge node {a} (r1)
+    (r1) edge node {b} (r2);
+\end{tikzpicture}
+\qquad
+\begin{tikzpicture}[node distance=32mm,on grid,auto]
+  % reversed ε-NEA M'
+  \node[state,initial] (s) {$S$};
+  \node[state,accepting,right=of s] (p0) {$r_0$};
+  \node[state,right=of p0] (p1) {$r_1$};
+  \node[state,right=of p1] (p2) {$r_2$};
+  \path[->]
+    (s) edge[dashed, bend right] node {$\varepsilon$} (p2)
+    (p2) edge node {b} (p1)
+    (p1) edge node {a} (p0);
+\end{tikzpicture}
+\end{center}
+
+%--------------------------------------------------------
+\section{\texorpdfstring{NEA $\Rightarrow$ DEA: Potenzmengenkonstruktion}{NEA → DEA: Potenzmengenkonstruktion}}
+\textbf{Schritte (Papier):}
+\begin{enumerate}
+  \item \textit{Startzustand:} $\{q_0\}$.
+  \item \textit{Zustände:} alle erreichbaren Teilmengen $S\subseteq Q_N$.
+  \item \textit{Übergang:} $\delta_D(S,a)=\bigcup_{q\in S} \delta_N(q,a)$.
+  \item \textit{Akzeptierend:} $S$ ist akzeptierend, falls $S\cap F_N\neq\varnothing$.
+\end{enumerate}
+
+\paragraph{Minimalbeispiel}\leavevmode
+\begin{center}
+% Ursprünglicher NEA
+\begin{tikzpicture}[node distance=28mm,on grid,auto]
+  \node[state,initial]            (nA) {$A$};
+  \node[state,right=of nA]        (nB) {$B$};
+  \node[state,accepting,below=of nA] (nC) {$C$};
+  \path[->]
+    (nA) edge[loop above] node {0} ()
+         edge[bend left]  node {1} (nB)
+    (nB) edge[bend left]  node[swap] {0,1} (nC)
+    (nC) edge[loop below] node {0,1} ();
+\end{tikzpicture}
+\end{center}
+Dieser NEA akzeptiert Wörter, in denen mindestens ein Symbol~1 auf eine beliebige~0 folgt.
+
+\medskip
+\noindent
+Nach Anwendung der Potenzmengenkonstruktion erhält man folgende erreichbare Zustände (nur vier von $2^{3}=8$ sind tatsächlich nötig):
+\[
+\begin{array}{c|c|c}
+S & 0 & 1\\\hline
+\{A\} & \{A\} & \{A,B\} \\
+\{A,B\} & \{A,C\} & \{A,B,C\} \\
+\{A,C\} & \{A\} & \{A,B\} \\
+\{A,B,C\} & \{A,C\} & \{A,B,C\}
+\end{array}
+\]
+\begin{center}
+% DEA nach PMK
+\begin{tikzpicture}[node distance=32mm,on grid,auto]
+  \node[state,initial]                 (d0) {$\{A\}$};
+  \node[state,right=of d0]             (d1) {$\{A,B\}$};
+  \node[state,below=of d0]             (d2) {$\{A,C\}$};
+  \node[state,accepting,right=of d2]   (d3) {$\{A,B,C\}$};
+  \path[->]
+    (d0) edge[bend left]      node {1} (d1)
+         edge[loop above]     node {0} ()
+    (d1) edge[bend left]      node {0} (d2)
+         edge[bend left]      node {1} (d3)
+    (d2) edge[bend left]      node {1} (d1)
+         edge[bend left]      node {0} (d0)
+    (d3) edge[loop below]     node {1} ()
+         edge[bend left]      node {0} (d2);
+\end{tikzpicture}
+\end{center}
+Die akzeptierenden DEA‑Zustände sind genau die Teilmengen, die $C$ enthalten (hier: $\{A,C\}$ und $\{A,B,C\}$).  
+Das Beispiel demonstriert ausführlich das exponentielle Wachstum der Zustandsanzahl und verdeutlicht die auf den Folien gezeigte Tabelle von Prof.~Striegnitz.  
+\medskip
+\textbf{Faustregel:} Beim Zeichnen genügt es stets, nur die \emph{erreichbaren} Teilmengen zu betrachten – das spart Zeit und Tinte.
+
+%========================================================

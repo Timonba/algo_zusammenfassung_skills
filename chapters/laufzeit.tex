@@ -1,0 +1,94 @@
+% chapters/laufzeit.tex – Laufzeit von Algorithmen
+% (benötigt keine zusätzlichen Pakete außer denen aus main.tex)
+
+\chapter{Laufzeit von Algorithmen}
+
+%--------------------------------------------------------
+\section{Definition von $O,\Omega,\Theta$}
+\subsection*{Mathematische Formulierung}
+Seien $f,g\colon \mathbb N \to \mathbb R_{>0}$ Funktionen. Dann definiert die
+\emph{Landau-Notation} die Mengen
+\begin{align*}
+  O(f)      &:= \{\,g \mid \exists\,c,n_0>0: \forall n\ge n_0:\; g(n)\le c\,f(n)\,\},\\
+  \Omega(f) &:= \{\,g \mid \exists\,c,n_0>0: \forall n\ge n_0:\; g(n)\ge c\,f(n)\,\},\\
+  \Theta(f) &:= O(f)\cap\Omega(f).
+\end{align*}
+Kurz: $g\in O(f)$ liefert eine \emph{obere Schranke}, $g\in\Omega(f)$ eine
+\emph{untere Schranke}, und $g\in\Theta(f)$ heißt, daß $f$ und $g$ asymptotisch
+gleiche Wachstumsordnung besitzen.
+
+\subsection*{Umgangssprachliche Faustformel}
+\begin{description}
+  \item[$O$ („O-groß“)] gibt an, wie schnell \emph{spätestens} etwas wächst – eine Garantie nach oben.
+  \item[$\Omega$ („Omega-groß“)] gibt an, wie schnell \emph{mindestens} etwas wächst – eine Garantie nach unten.
+  \item[$\Theta$ („Theta-groß“)] bedeutet „genau in dieser Größenordnung“ – die Funktion wächst weder wesentlich schneller noch wesentlich langsamer.
+\end{description}
+
+%--------------------------------------------------------
+\section{Funktionen asymptotisch vergleichen}
+Um zwei Funktionen $f$ und $g$ zu vergleichen, prüft man oft den Grenzwert
+\[\lim_{n\to\infty} \frac{f(n)}{g(n)}\;=\;\begin{cases}
+  0 &\Rightarrow f\in O(g)\\[4pt]
+  \infty &\Rightarrow f\in \Omega(g)\\[4pt]
+  c\in(0,\infty) &\Rightarrow f\in \Theta(g).
+\end{cases}\]
+Typische Wachstumshierarchie:
+\[1\;\ll\; \log\!n\;\ll\; n^k\;\ll\; n^k\log n\;\ll\; a^n\;\ll\; n!\;\ll\; n^{n}.\]
+Ein schneller Test ist daher, Polynom- gegen Exponential- oder Fakultäts-Term
+zu vergleichen; stetig vorliegende $\log$-Faktoren spielen dabei nur eine
+untergeordnete Rolle.
+
+%--------------------------------------------------------
+\section{Master-Theorem}
+Betrachte Rekursionen der Form
+\[T(n)=a\,T\!\bigl(\tfrac{n}{b}\bigr)+d(n)\qquad(a\ge1,\;b>1).\]
+Sei $d(n)\in O(n^{\gamma})$ für ein $\gamma\ge0$. Dann gilt
+\[
+T(n)=\begin{cases}
+  \Theta\bigl(n^{\log_b a}\bigr), & a> b^{\gamma},\\[4pt]
+  \Theta\bigl(n^{\gamma}\log n\bigr), & a= b^{\gamma},\\[4pt]
+  \Theta\bigl(n^{\gamma}\bigr), & a< b^{\gamma}.
+\end{cases}
+\]
+\subsection*{Beispiele}
+\begin{enumerate}
+  \item[Fall 1:] $T(n)=2T(n/2)+1$\\
+        $a=2,\;b=2,\;d(n)=1\in O(n^{0})$ mit $a>b^{0}=1$ $\Rightarrow$
+        $T(n)=\Theta(n^{\log_22})=\Theta(n)$.\\
+        (Lineare Zeit, etwa beim Best-case von Quicksort.)
+  \item[Fall 2:] $T(n)=2T(n/2)+n$\\
+        $a=2,\;b=2,\;d(n)=n$ mit $\gamma=1$ und $a=b^{\gamma}$ $\Rightarrow$
+        $T(n)=\Theta(n\log n)$.\\
+        (Klassisch: Mergesort.)
+  \item[Fall 3:] $T(n)=9T(n/3)+n$\\
+        $a=9,\;b=3,\;d(n)=n$ mit $\gamma=1$ und $a>b^{\gamma}=3$ $\Rightarrow$
+        $T(n)=\Theta\bigl(n^{\log_39}\bigr)=\Theta(n^{2})$.\\
+        (Beispiel aus Strassen-Matrixmultiplikation.)
+\end{enumerate}
+
+%--------------------------------------------------------
+\section{Erzeugende Funktionen}
+Gegeben eine Folge $(a_n)_{n\ge0}$ definiert die
+\emph{erzeugende Funktion}
+\[F(x)=\sum_{n=0}^{\infty} a_n x^{n}.\]
+Vorteil: Verschiebungen werden zu einfachen Operationen, z.\,B.\
+$x\,F(x)=\sum_{n\ge0} a_{n-1}x^{n}$ (Index-Shift).
+
+\subsection*{Idee}
+Eine Rekursion für $a_n$ wird in eine Gleichung für $F(x)$ übersetzt, diese nach
+$F(x)$ aufgelöst und anschließend über Potenzreihenentwicklung $a_n$
+ausgelesen.
+
+\subsection*{Beispiel: Geometrische Folge}
+Sei $a_n=2^n$ mit $a_0=1$. Dann
+\[F(x)=\sum_{n\ge0} (2x)^n=\frac{1}{1-2x},\qquad |x|<\tfrac{1}{2}.\]
+Die geschlossene Form verrät Radius der Konvergenz $\tfrac12$ und bestätigt
+$a_n=[x^{n}]F(x)=2^{n}$.
+
+\subsection*{Beispiel: Fibonacci}
+Für $F(x)=\sum_{n\ge0} \text{Fib}(n) x^n$ gilt wegen $\text{Fib}(n)=\text{Fib}(n-1)+\text{Fib}(n-2)$
+\[F(x)=x + xF(x) + x^{2}F(x) \;\Longrightarrow\; F(x)=\frac{x}{1 - x - x^{2}}.\]
+Eine Partialbruchzerlegung liefert schließlich die Binet-Formel
+\[\text{Fib}(n)=\frac{\varphi^{n}-\psi^{n}}{\sqrt{5}},\qquad
+  \varphi=\tfrac{1+\sqrt{5}}{2},\;
+  \psi=1-\varphi.\]
